@@ -1,6 +1,6 @@
 Consider a cloud layer with the following parameters:  
 Optical thickness $\tau = 20$,  
-Phase function $P(\Theta) = (1-g^2)/(1+g^2-2g\cos\Theta)^{3/2}$ and $g=0.8$,  
+Phase function $P(\theta) = (1-g^2)/(1+g^2-2g\cos\theta)^{3/2}$ and $g=0.8$,  
 Single-scattering albedo $\tilde{\omega} = 0.95$.  
 
 The solar zenith and azimuthal angles $\theta_0 = 35^\circ$ and $\varphi_0 = 0^\circ$,  
