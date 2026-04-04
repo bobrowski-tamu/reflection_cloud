@@ -11,12 +11,9 @@ phi0_deg = 0.0
 mu0 = np.cos(np.radians(theta0_deg))
 phi0 = np.radians(phi0_deg)
 
-# --------------------------------------------------
-# Numerical grids
-# --------------------------------------------------
 N_mu = 100
 N_tau = 100
-N_order = 8
+N_order = 20
 
 mu = np.linspace(0.02, 1.0, N_mu)      # avoid mu = 0
 tau = np.linspace(0.0, tau_c, N_tau)
@@ -24,27 +21,21 @@ tau = np.linspace(0.0, tau_c, N_tau)
 dmu = mu[1] - mu[0]
 dtau = tau[1] - tau[0]
 
-phi_list_deg = [30.0, 90.0, 120.0]
+phi_list_deg = [30.0, 90.0, 120.0]      #convert to radians
 phi_list = np.radians(phi_list_deg)
 
-# --------------------------------------------------
 # Phase function
-# --------------------------------------------------
 def phase_function(cos_theta):
     return (1.0 - g**2) / (1.0 + g**2 - 2.0*g*cos_theta)**1.5
 
-# --------------------------------------------------
 # Scattering angle cosines
-# --------------------------------------------------
 def cos_theta_R(mu_val, phi_val):
     return -mu_val*mu0 + np.sqrt(1.0 - mu_val**2)*np.sqrt(1.0 - mu0**2)*np.cos(phi_val - phi0)
 
 def cos_theta_T(mu_val, phi_val):
     return  mu_val*mu0 + np.sqrt(1.0 - mu_val**2)*np.sqrt(1.0 - mu0**2)*np.cos(phi_val - phi0)
 
-# --------------------------------------------------
 # First-order source functions
-# --------------------------------------------------
 def J1_up(mu_val, phi_val, tau_val):
     c = cos_theta_R(mu_val, phi_val)
     P = phase_function(c)
@@ -55,9 +46,7 @@ def J1_down(mu_val, phi_val, tau_val):
     P = phase_function(c)
     return (omega / (4.0*np.pi)) * np.exp(-tau_val / mu0) * P
 
-# --------------------------------------------------
 # Formal solutions
-# --------------------------------------------------
 def upward_intensity_from_source(mu_val, J_tau):
     # I_up(0) = (1/mu) int_0^tau_c J(t) exp(-t/mu) dt
     return np.sum((1.0/mu_val) * J_tau * np.exp(-tau/mu_val)) * dtau
@@ -66,9 +55,7 @@ def downward_intensity_from_source(mu_val, J_tau):
     # I_down(tau_c) = (1/mu) int_0^tau_c J(t) exp(-(tau_c-t)/mu) dt
     return np.sum((1.0/mu_val) * J_tau * np.exp(-(tau_c - tau)/mu_val)) * dtau
 
-# --------------------------------------------------
 # First-order intensities
-# --------------------------------------------------
 R_total = {phi_deg: np.zeros_like(mu) for phi_deg in phi_list_deg}
 T_total = {phi_deg: np.zeros_like(mu) for phi_deg in phi_list_deg}
 
@@ -98,11 +85,7 @@ for p, phi_val in enumerate(phi_list):
             for k in range(len(tau))
         ])
 
-# --------------------------------------------------
-# Higher orders
-# Simple version:
-# use the azimuths 30, 90, 120 only and integrate over mu only
-# --------------------------------------------------
+# Higher orders: use 30, 90, 120 only and integrate over mu
 for order in range(2, N_order + 1):
     I_up_new = np.zeros_like(I_up_prev)
     I_down_new = np.zeros_like(I_down_prev)
@@ -148,27 +131,23 @@ for order in range(2, N_order + 1):
     I_up_prev = I_up_new.copy()
     I_down_prev = I_down_new.copy()
 
-# --------------------------------------------------
-# Plot R
-# --------------------------------------------------
+# Plot Reflection
 plt.figure(figsize=(8,5))
 for phi_deg in phi_list_deg:
     plt.plot(mu, R_total[phi_deg], label=fr'$\phi={phi_deg:.0f}^\circ$')
 plt.xlabel(r'$\mu=\cos\theta$')
-plt.ylabel(r'$R(\cos\theta,\phi,\cos\theta_0,\phi_0)$')
-plt.title('Reflection Function')
+plt.ylabel(r'$R(\mu,\phi,\mu_0,\phi_0)$')
+plt.title(f'Reflection Function ')
 plt.grid(True)
 plt.legend()
 plt.tight_layout()
 
-# --------------------------------------------------
-# Plot T
-# --------------------------------------------------
+# Plot Transmission
 plt.figure(figsize=(8,5))
 for phi_deg in phi_list_deg:
     plt.plot(mu, T_total[phi_deg], label=fr'$\phi={phi_deg:.0f}^\circ$')
 plt.xlabel(r'$\mu=\cos\theta$')
-plt.ylabel(r'$T(\cos\theta,\phi,\cos\theta_0,\phi_0)$')
+plt.ylabel(r'$T(\mu,\phi,\mu_0,\phi_0)$')
 plt.title('Transmission Function')
 plt.grid(True)
 plt.legend()
