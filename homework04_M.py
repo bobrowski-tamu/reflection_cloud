@@ -1,22 +1,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-tau_c = 20.0
-omega = 0.95
-g = 0.8
+TAU_C = 20.0
+OMEGA = 0.95
+G = 0.8
 
-theta0_deg = 35.0
-phi0_deg = 0.0
+THETA0_DEG = 35.0
+PHI0_DEG = 0.0
 
-mu0 = np.cos(np.radians(theta0_deg))
-phi0 = np.radians(phi0_deg)
+mu0 = np.cos(np.radians(THETA0_DEG))
+phi0 = np.radians(PHI0_DEG)
 
+#set steps for numerical calculation
 N_mu = 100
 N_tau = 100
 N_order = 20
 
 mu = np.linspace(0.02, 1.0, N_mu)      # avoid mu = 0
-tau = np.linspace(0.0, tau_c, N_tau)
+tau = np.linspace(0.0, TAU_C, N_tau)
 
 dmu = mu[1] - mu[0]
 dtau = tau[1] - tau[0]
@@ -26,7 +27,7 @@ phi_list = np.radians(phi_list_deg)
 
 # Phase function
 def phase_function(cos_theta):
-    return (1.0 - g**2) / (1.0 + g**2 - 2.0*g*cos_theta)**1.5
+    return (1.0 - G**2) / (1.0 + G**2 - 2.0*G*cos_theta)**1.5
 
 # Scattering angle cosines
 def cos_theta_R(mu_val, phi_val):
@@ -39,21 +40,21 @@ def cos_theta_T(mu_val, phi_val):
 def J1_up(mu_val, phi_val, tau_val):
     c = cos_theta_R(mu_val, phi_val)
     P = phase_function(c)
-    return (omega / (4.0*np.pi)) * np.exp(-tau_val / mu0) * P
+    return (OMEGA / (4.0*np.pi)) * np.exp(-tau_val / mu0) * P
 
 def J1_down(mu_val, phi_val, tau_val):
     c = cos_theta_T(mu_val, phi_val)
     P = phase_function(c)
-    return (omega / (4.0*np.pi)) * np.exp(-tau_val / mu0) * P
+    return (OMEGA / (4.0*np.pi)) * np.exp(-tau_val / mu0) * P
 
 # Formal solutions
 def upward_intensity_from_source(mu_val, J_tau):
-    # I_up(0) = (1/mu) int_0^tau_c J(t) exp(-t/mu) dt
+    # I_up(0) = (1/mu) int_0^TAU_C J(t) exp(-t/mu) dt
     return np.sum((1.0/mu_val) * J_tau * np.exp(-tau/mu_val)) * dtau
 
 def downward_intensity_from_source(mu_val, J_tau):
-    # I_down(tau_c) = (1/mu) int_0^tau_c J(t) exp(-(tau_c-t)/mu) dt
-    return np.sum((1.0/mu_val) * J_tau * np.exp(-(tau_c - tau)/mu_val)) * dtau
+    # I_down(TAU_C) = (1/mu) int_0^TAU_C J(t) exp(-(TAU_C-t)/mu) dt
+    return np.sum((1.0/mu_val) * J_tau * np.exp(-(TAU_C - tau)/mu_val)) * dtau
 
 # First-order intensities
 R_total = {phi_deg: np.zeros_like(mu) for phi_deg in phi_list_deg}
@@ -107,11 +108,11 @@ for order in range(2, N_order + 1):
                     cosT = mu_out*mu_in + np.sqrt(1-mu_out**2)*np.sqrt(1-mu_in**2)*np.cos(phi_out - phi_in)
                     PT = phase_function(cosT)
 
-                    J_up_tau += (omega / (4.0*np.pi)) * PR * I_down_prev[p_in, i_in, :] * dmu
-                    J_down_tau += (omega / (4.0*np.pi)) * PT * I_down_prev[p_in, i_in, :] * dmu
+                    J_up_tau += (OMEGA / (4.0*np.pi)) * PR * I_down_prev[p_in, i_in, :] * dmu
+                    J_down_tau += (OMEGA / (4.0*np.pi)) * PT * I_down_prev[p_in, i_in, :] * dmu
 
-                    J_up_tau += (omega / (4.0*np.pi)) * PT * I_up_prev[p_in, i_in, :] * dmu
-                    J_down_tau += (omega / (4.0*np.pi)) * PR * I_up_prev[p_in, i_in, :] * dmu
+                    J_up_tau += (OMEGA / (4.0*np.pi)) * PT * I_up_prev[p_in, i_in, :] * dmu
+                    J_down_tau += (OMEGA / (4.0*np.pi)) * PR * I_up_prev[p_in, i_in, :] * dmu
 
             I_up_boundary = upward_intensity_from_source(mu_out, J_up_tau)
             I_down_boundary = downward_intensity_from_source(mu_out, J_down_tau)
