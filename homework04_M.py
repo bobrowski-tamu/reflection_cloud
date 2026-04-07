@@ -108,11 +108,11 @@ for order in range(2, N_order + 1):
                     cosT = mu_out*mu_in + np.sqrt(1-mu_out**2)*np.sqrt(1-mu_in**2)*np.cos(phi_out - phi_in)
                     PT = phase_function(cosT)
 
-                    J_up_tau += (OMEGA / (4.0*np.pi)) * PR * I_down_prev[p_in, i_in, :] * dmu
-                    J_down_tau += (OMEGA / (4.0*np.pi)) * PT * I_down_prev[p_in, i_in, :] * dmu
+                    J_up_tau += (OMEGA / (4.0*np.pi)) * PR * I_down_prev[p_in, i_in, :] * dmu / len(phi_list)
+                    J_down_tau += (OMEGA / (4.0*np.pi)) * PT * I_down_prev[p_in, i_in, :] * dmu / len(phi_list)
 
-                    J_up_tau += (OMEGA / (4.0*np.pi)) * PT * I_up_prev[p_in, i_in, :] * dmu
-                    J_down_tau += (OMEGA / (4.0*np.pi)) * PR * I_up_prev[p_in, i_in, :] * dmu
+                    J_up_tau += (OMEGA / (4.0*np.pi)) * PT * I_up_prev[p_in, i_in, :] * dmu / len(phi_list)
+                    J_down_tau += (OMEGA / (4.0*np.pi)) * PR * I_up_prev[p_in, i_in, :] * dmu / len(phi_list)
 
             I_up_boundary = upward_intensity_from_source(mu_out, J_up_tau)
             I_down_boundary = downward_intensity_from_source(mu_out, J_down_tau)
@@ -138,7 +138,7 @@ for phi_deg in phi_list_deg:
     plt.plot(mu, R_total[phi_deg], label=fr'$\phi={phi_deg:.0f}^\circ$')
 plt.xlabel(r'$\mu=\cos\theta$')
 plt.ylabel(r'$R(\mu,\phi,\mu_0,\phi_0)$')
-plt.title(f'Reflection Function ')
+plt.title(f'Reflection')
 plt.grid(True)
 plt.legend()
 plt.tight_layout()
@@ -149,7 +149,7 @@ for phi_deg in phi_list_deg:
     plt.plot(mu, T_total[phi_deg], label=fr'$\phi={phi_deg:.0f}^\circ$')
 plt.xlabel(r'$\mu=\cos\theta$')
 plt.ylabel(r'$T(\mu,\phi,\mu_0,\phi_0)$')
-plt.title('Transmission Function')
+plt.title('Transmission')
 plt.grid(True)
 plt.legend()
 plt.tight_layout()
