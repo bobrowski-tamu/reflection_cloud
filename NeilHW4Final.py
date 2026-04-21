@@ -54,7 +54,7 @@ N_order = 15
 
 # Phase function and geometry
 def phase_function(cos_theta):
-    return (1.0 - G**2) / ((1.0 + G**2 - 2.0 * G * cos_theta) ** 1.5)
+    return (1.0 - G**2) / (4.0 * np.pi * (1.0 + G**2 - 2.0 * G * cos_theta) ** 1.5)
 #Reflection Angle: 
 def cos_theta_reflection(mu_out, phi_out_val, mu_in, phi_in):
     return (
