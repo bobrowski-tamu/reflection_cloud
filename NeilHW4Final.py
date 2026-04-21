@@ -2,12 +2,13 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Problem parameters
+# Variables: 
 TAU_C = 20.0
 OMEGA = 0.95
 G = 0.8
 THETA0_DEG = 35.0
 PHI0_DEG = 0.0
+#Don't need but but for clarity 
 F0 = 1361.0
 
 mu0 = np.cos(np.radians(THETA0_DEG))
@@ -15,11 +16,8 @@ phi0 = np.radians(PHI0_DEG)
 
 # Numerical grids
 N_tau = 800
-# For first-order Riemann at large tau_c, keep a fine uniform grid so cell widths
-# do not become too large (large Delta_tau / mu over-amplifies source terms).
 tau = np.linspace(0.0, TAU_C, N_tau)
 
-# Clustered mu grid: avoids mu = 0 and adds resolution near small mu.
 N_mu = 240
 MU_MIN = 0.01
 u = np.linspace(0.0, 1.0, N_mu)
@@ -27,7 +25,6 @@ mu = MU_MIN + (1.0 - MU_MIN) * u**2
 
 delta_tau = np.diff(tau)
 
-# Trapezoidal quadrature weights for nonuniform mu.
 dmu = np.empty_like(mu)
 dmu[0] = 0.5 * (mu[1] - mu[0])
 dmu[-1] = 0.5 * (mu[-1] - mu[-2])
@@ -36,16 +33,13 @@ dmu[1:-1] = 0.5 * (mu[2:] - mu[:-2])
 # Azimuthal angles:
 phi_out_deg = [30.0, 90.0, 120.0]
 
-# Transmission reporting convention:
 TRANSMISSION_MODE = "directional"
 
-# Internal azimuth quadrature for scattering integral.
 PHI_STEP_DEG = 10.0
 phi_int_deg = np.arange(0.0, 360.0, PHI_STEP_DEG)
 phi_int = np.radians(phi_int_deg)
 dphi = np.radians(PHI_STEP_DEG)
 
-# Output azimuths must land on the internal phi grid.
 p_out_targets = {}
 for pdeg in phi_out_deg:
     phi_match_idx = np.where(np.isclose(phi_int_deg, pdeg))[0]
@@ -74,7 +68,7 @@ def cos_theta_transmission(mu_out, phi_out_val, mu_in, phi_in):
         + np.sqrt(1.0 - mu_out**2) * np.sqrt(1.0 - mu_in**2) * np.cos(phi_out_val - phi_in)
     )
 
-# Source terms and formal solutions:
+# Source term, reflection and transmission angles: 
 def J1_up(mu_val, phi_val, tau_val):
     cos_th = cos_theta_reflection(mu_val, phi_val, mu0, phi0)
     return OMEGA * F0 * phase_function(cos_th) * np.exp(-tau_val / mu0)
@@ -85,7 +79,6 @@ def J1_down(mu_val, phi_val, tau_val):
 
 def upward_intensity_at_boundary(mu_val, J_tau):
     result = 0.0
-    # Exact cell integration of the formal solution with piecewise-constant J on each cell.
     for k in range(len(tau) - 1):
         delta = tau[k + 1] - tau[k]
         exponent = -tau[k + 1] / mu_val
@@ -96,7 +89,6 @@ def upward_intensity_at_boundary(mu_val, J_tau):
 
 def downward_intensity_at_boundary(mu_val, J_tau):
     result = 0.0
-    # Use cell-averaged source with exact attenuation-difference weights.
     for k in range(1, len(tau)):
         a = np.exp(-(TAU_C - tau[k]) / mu_val)
         b = np.exp(-(TAU_C - tau[k - 1]) / mu_val)
@@ -138,9 +130,6 @@ mu_perp = np.sqrt(1.0 - mu**2)
 phi_cos_diff = np.cos(phi_int[:, None] - phi_int[None, :])
 mu_weights = dmu * dphi
 
-# Precompute a single full-row discrete phase normalization per outgoing
-# direction that includes both incoming hemispheres. This keeps the combined
-# scattering source correctly normalized in higher orders.
 phase_norm_total = np.zeros((n_phi, n_mu))
 for p_out in range(n_phi):
     for i_out, mu_out in enumerate(mu):
@@ -167,7 +156,7 @@ print(
 I_up_prev = np.zeros((n_phi, n_mu, n_tau))
 I_down_prev = np.zeros((n_phi, n_mu, n_tau))
 
-# First order on internal azimuth grid
+# First order:
 for p, phi_val in enumerate(phi_int):
     for i, mu_val in enumerate(mu):
         J_up_tau = J1_up(mu_val, phi_val, tau)
@@ -205,7 +194,6 @@ for order in range(2, N_order + 1):
                 P_r_vec = phase_function(cos_r_vec)
                 P_t_vec = phase_function(cos_t_vec)
 
-                # Normalize both kernels by the same combined row sum 
                 wr = (P_r_vec / norm_total) * mu_weights
                 wt = (P_t_vec / norm_total) * mu_weights
 
@@ -234,7 +222,7 @@ print(f"Done in {elapsed:.2f} s")
 for pdeg in phi_out_deg:
     print(f"phi={pdeg:.0f} deg: R_max={np.max(R_total[pdeg]):.6e}, T_max={np.max(T_total[pdeg]):.6e}")
 
-# Plot results for requested azimuths
+#Plotting:
 plt.figure(figsize=(8, 5))
 for pdeg in phi_out_deg:
     plt.plot(mu, R_total[pdeg], label=rf"$\phi={pdeg:.0f}^\circ$")
